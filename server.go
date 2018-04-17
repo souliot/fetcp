@@ -1,4 +1,4 @@
-package gotcp
+package fetcp
 
 import (
 	"net"
