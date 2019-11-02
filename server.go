@@ -1,19 +1,16 @@
 package fetcp
 
 import (
+	"fmt"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/astaxie/beego"
 )
 
-type Config struct {
-	PacketSendChanLimit    uint32 // the limit of packet send channel
-	PacketReceiveChanLimit uint32 // the limit of packet receive channel
-	ConnectTimeOut         int64  // the time out of heatbeat   seccond
-}
-
 type Server struct {
-	config    *Config         // server configuration
+	config    *SrvConfig      // server configuration
 	callback  ConnCallback    // message callbacks in connection
 	protocol  Protocol        // customize packet protocol
 	exitChan  chan struct{}   // notify all goroutines to shutdown
@@ -21,14 +18,29 @@ type Server struct {
 }
 
 // NewServer creates a server
-func NewServer(config *Config, callback ConnCallback, protocol Protocol) *Server {
+func NewServer(callback ConnCallback, protocol Protocol) *Server {
 	return &Server{
-		config:    config,
+		config:    ServerConfig,
 		callback:  callback,
 		protocol:  protocol,
 		exitChan:  make(chan struct{}),
 		waitGroup: &sync.WaitGroup{},
 	}
+}
+
+func (s *Server) Server() {
+	tcpAddr, err := net.ResolveTCPAddr("tcp4", fmt.Sprintf(":%d", s.config.Port))
+	if err != nil {
+		beego.Error("resolve tcp addr err: ", err)
+		return
+	}
+	listener, err := net.ListenTCP("tcp", tcpAddr)
+	if err != nil {
+		beego.Error("listen err", err)
+		return
+	}
+	go s.Start(listener, time.Second)
+	beego.Info("应用", s.ServerName, "启动监听：", listener.Addr(), "成功")
 }
 
 // Start starts service
