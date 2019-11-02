@@ -30,8 +30,8 @@ func init() {
 
 func ReloadConfig() {
 	beego.LoadAppConfig("ini", "./system.ini")
-	ServerConfig.ServerName = beego.AppConfig.String("local::ServerName")
-	ServerConfig.Port, _ = beego.AppConfig.Int("local::Port")
+	ServerConfig.ServerName = beego.AppConfig.String("server::ServerName")
+	ServerConfig.Port, _ = beego.AppConfig.Int("server::Port")
 	ServerConfig.PacketSendChanLimit, _ = beego.AppConfig.Int("server::PacketSendChanLimit")
 	ServerConfig.PacketReceiveChanLimit, _ = beego.AppConfig.Int("server::PacketReceiveChanLimit")
 	ServerConfig.ConnectTimeOut, _ = beego.AppConfig.Int64("server::ConnectTimeOut")
