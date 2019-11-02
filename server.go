@@ -17,7 +17,6 @@ type Server struct {
 	waitGroup *sync.WaitGroup // wait for all goroutines
 }
 
-// NewServer creates a server
 func NewServer(callback ConnCallback, protocol Protocol) *Server {
 	return &Server{
 		config:    ServerConfig,
