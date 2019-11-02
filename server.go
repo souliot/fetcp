@@ -39,7 +39,7 @@ func (s *Server) Server() {
 		return
 	}
 	go s.Start(listener, time.Second)
-	beego.Info("应用", s.ServerName, "启动监听：", listener.Addr(), "成功")
+	beego.Info("应用", s.config.ServerName, "启动监听：", listener.Addr(), "成功")
 }
 
 // Start starts service
