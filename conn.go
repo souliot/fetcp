@@ -17,14 +17,16 @@ var (
 
 // Conn exposes a set of callbacks for the various events that occur on a connection
 type Conn struct {
-	srv               *Server
-	conn              *net.TCPConn  // the raw connection
-	extraData         interface{}   // to save extra data
-	closeOnce         sync.Once     // close the conn, once, per instance
-	closeFlag         int32         // close flag
-	closeChan         chan struct{} // close chanel
-	packetSendChan    chan Packet   // packet send chanel
-	packetReceiveChan chan Packet   // packeet receive chanel
+	srv                *Server
+	conn               *net.TCPConn  // the raw connection
+	extraData          interface{}   // to save extra data
+	closeOnce          sync.Once     // close the conn, once, per instance
+	closeFlag          int32         // close flag
+	closeChan          chan struct{} // close chanel
+	packetSendChan     chan Packet   // packet send chanel
+	packetReceiveChan  chan Packet   // packeet receive chanel
+	HeatBeatStatus     bool          // heatbeat status
+	LastTimeOfHeatBeat int64         // last heatbeat time
 }
 
 // ConnCallback is an interface of methods that are used as callbacks on a connection
@@ -44,11 +46,13 @@ type ConnCallback interface {
 // newConn returns a wrapper of raw conn
 func newConn(conn *net.TCPConn, srv *Server) *Conn {
 	return &Conn{
-		srv:               srv,
-		conn:              conn,
-		closeChan:         make(chan struct{}),
-		packetSendChan:    make(chan Packet, srv.config.PacketSendChanLimit),
-		packetReceiveChan: make(chan Packet, srv.config.PacketReceiveChanLimit),
+		srv:                srv,
+		conn:               conn,
+		closeChan:          make(chan struct{}),
+		packetSendChan:     make(chan Packet, srv.config.PacketSendChanLimit),
+		packetReceiveChan:  make(chan Packet, srv.config.PacketReceiveChanLimit),
+		HeatBeatStatus:     srv.config.HeatbeatCheck,
+		LastTimeOfHeatBeat: time.Now().Unix(),
 	}
 }
 
@@ -67,9 +71,29 @@ func (c *Conn) GetRawConn() *net.TCPConn {
 	return c.conn
 }
 
+func (c *Conn) StartHeartBeatTimeOutCheck() {
+	if !c.HeatBeatStatus {
+		return
+	}
+	timer := time.NewTicker(time.Duration(c.srv.config.HeatbeatCheckSpec) * time.Second)
+	if !c.IsClosed() {
+		go func() {
+			for _ = range timer.C {
+				status := c.HeatBeatStatus
+				lastTimeOfHeatBeat := c.LastTimeOfHeatBeat
+				c.HeartBeatTimeOutCheck(lastTimeOfHeatBeat)
+				if !status {
+					timer.Stop()
+				}
+			}
+		}()
+	}
+}
+
 // Close closes the connection
 func (c *Conn) Close() {
 	c.closeOnce.Do(func() {
+		c.HeatBeatStatus = false
 		atomic.StoreInt32(&c.closeFlag, 1)
 		close(c.closeChan)
 		close(c.packetSendChan)
@@ -125,6 +149,7 @@ func (c *Conn) Do() {
 		return
 	}
 
+	asyncDo(c.StartHeartBeatTimeOutCheck, c.srv.waitGroup)
 	asyncDo(c.handleLoop, c.srv.waitGroup)
 	asyncDo(c.readLoop, c.srv.waitGroup)
 	asyncDo(c.writeLoop, c.srv.waitGroup)
@@ -151,6 +176,7 @@ func (c *Conn) readLoop() {
 		if err != nil {
 			return
 		}
+		c.LastTimeOfHeatBeat = time.Now().Unix()
 
 		c.packetReceiveChan <- p
 	}
@@ -177,6 +203,7 @@ func (c *Conn) writeLoop() {
 			if _, err := c.conn.Write(p.Serialize()); err != nil {
 				return
 			}
+			c.LastTimeOfHeatBeat = time.Now().Unix()
 		}
 	}
 }
@@ -202,6 +229,7 @@ func (c *Conn) handleLoop() {
 			if !c.srv.callback.OnMessage(c, p) {
 				return
 			}
+			c.LastTimeOfHeatBeat = time.Now().Unix()
 		}
 	}
 }
