@@ -1,4 +1,4 @@
-module github.com/souliot/fetcp
+module fetcp
 
 go 1.13
 
