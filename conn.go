@@ -174,7 +174,7 @@ func (c *Conn) readLoop() {
 
 		p, err := c.srv.protocol.ReadPacket(c.conn)
 		if err != nil {
-			return
+			continue
 		}
 		c.LastTimeOfHeatBeat = time.Now().Unix()
 
@@ -201,7 +201,7 @@ func (c *Conn) writeLoop() {
 				return
 			}
 			if _, err := c.conn.Write(p.Serialize()); err != nil {
-				return
+				continue
 			}
 			c.LastTimeOfHeatBeat = time.Now().Unix()
 		}
