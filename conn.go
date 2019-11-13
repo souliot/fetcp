@@ -172,7 +172,7 @@ func (c *Conn) readLoop() {
 		default:
 		}
 
-		p, err := c.srv.protocol.ReadPacket(c.conn)
+		p, err := c.srv.protocol.ReadPacket(c)
 		if err != nil {
 			continue
 		}
