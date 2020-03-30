@@ -176,10 +176,15 @@ func (c *Conn) readLoop() {
 		if err != nil {
 			continue
 		}
-		c.LastTimeOfHeatBeat = time.Now().Unix()
+		c.UpdateLastTimeOfHeatBeat()
 
 		c.packetReceiveChan <- p
 	}
+}
+
+func (c *Conn) UpdateLastTimeOfHeatBeat() {
+	c.LastTimeOfHeatBeat = time.Now().Unix()
+	return
 }
 
 func (c *Conn) writeLoop() {
@@ -203,7 +208,7 @@ func (c *Conn) writeLoop() {
 			if _, err := c.conn.Write(p.Serialize()); err != nil {
 				continue
 			}
-			c.LastTimeOfHeatBeat = time.Now().Unix()
+			c.UpdateLastTimeOfHeatBeat()
 		}
 	}
 }
@@ -229,7 +234,8 @@ func (c *Conn) handleLoop() {
 			if !c.srv.callback.OnMessage(c, p) {
 				return
 			}
-			c.LastTimeOfHeatBeat = time.Now().Unix()
+
+			c.UpdateLastTimeOfHeatBeat()
 		}
 	}
 }
