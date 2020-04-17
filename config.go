@@ -1,9 +1,5 @@
 package fetcp
 
-import (
-	"github.com/astaxie/beego"
-)
-
 type SrvConfig struct {
 	ServerName             string
 	Port                   int
@@ -15,12 +11,8 @@ type SrvConfig struct {
 }
 
 var (
-	ServerConfig *SrvConfig
-)
-
-func init() {
-	ServerConfig = &SrvConfig{
-		ServerName:             "MyServer",
+	DefaultServerConfig = &SrvConfig{
+		ServerName:             "fetcp",
 		Port:                   9000,
 		PacketSendChanLimit:    4096,
 		PacketReceiveChanLimit: 4096,
@@ -28,16 +20,32 @@ func init() {
 		HeatbeatCheck:          false,
 		HeatbeatCheckSpec:      5,
 	}
-	ReloadConfig()
-}
+)
 
-func ReloadConfig() {
-	beego.LoadAppConfig("ini", "./system.ini")
-	ServerConfig.ServerName = beego.AppConfig.DefaultString("server::ServerName", ServerConfig.ServerName)
-	ServerConfig.Port = beego.AppConfig.DefaultInt("server::Port", ServerConfig.Port)
-	ServerConfig.PacketSendChanLimit = beego.AppConfig.DefaultInt("server::PacketSendChanLimit", ServerConfig.PacketSendChanLimit)
-	ServerConfig.PacketReceiveChanLimit = beego.AppConfig.DefaultInt("server::PacketReceiveChanLimit", ServerConfig.PacketReceiveChanLimit)
-	ServerConfig.ConnectTimeOut = beego.AppConfig.DefaultInt64("server::ConnectTimeOut", ServerConfig.ConnectTimeOut)
-	ServerConfig.HeatbeatCheck = beego.AppConfig.DefaultBool("server::HeatbeatCheck", ServerConfig.HeatbeatCheck)
-	ServerConfig.HeatbeatCheckSpec = beego.AppConfig.DefaultInt("server::HeatbeatCheckSpec", ServerConfig.HeatbeatCheckSpec)
+func (s *SrvConfig) MergeConfig(cs ...*SrvConfig) {
+	if len(cs) < 1 {
+		return
+	}
+
+	sc := cs[0]
+	if sc.ServerName != "" {
+		s.ServerName = sc.ServerName
+	}
+	if sc.Port != 0 {
+		s.Port = sc.Port
+	}
+	if sc.PacketSendChanLimit != 0 {
+		s.PacketSendChanLimit = sc.PacketSendChanLimit
+	}
+	if sc.PacketReceiveChanLimit != 0 {
+		s.PacketReceiveChanLimit = sc.PacketReceiveChanLimit
+	}
+	if sc.ConnectTimeOut != 0 {
+		s.ConnectTimeOut = sc.ConnectTimeOut
+	}
+	if sc.HeatbeatCheckSpec != 0 {
+		s.HeatbeatCheckSpec = sc.HeatbeatCheckSpec
+	}
+	s.HeatbeatCheck = sc.HeatbeatCheck
+
 }

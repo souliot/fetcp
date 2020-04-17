@@ -3,10 +3,11 @@ package fetcp
 import (
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
-
-	"github.com/astaxie/beego"
 )
 
 type Server struct {
@@ -17,9 +18,11 @@ type Server struct {
 	waitGroup *sync.WaitGroup // wait for all goroutines
 }
 
-func NewServer(callback ConnCallback, protocol Protocol) *Server {
+func NewServer(callback ConnCallback, protocol Protocol, sConfig ...*SrvConfig) *Server {
+	DefaultServerConfig.MergeConfig(sConfig...)
+
 	return &Server{
-		config:    ServerConfig,
+		config:    DefaultServerConfig,
 		callback:  callback,
 		protocol:  protocol,
 		exitChan:  make(chan struct{}),
@@ -30,16 +33,18 @@ func NewServer(callback ConnCallback, protocol Protocol) *Server {
 func (s *Server) Server() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", fmt.Sprintf(":%d", s.config.Port))
 	if err != nil {
-		beego.Error("resolve tcp addr err: ", err)
+		fmt.Println("resolve tcp addr err: ", err)
 		return
 	}
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	if err != nil {
-		beego.Error("listen err", err)
+		fmt.Println("listen err", err)
 		return
 	}
 	go s.Start(listener, time.Second)
-	beego.Info("应用", s.config.ServerName, "启动监听：", listener.Addr(), "成功")
+	chSig := make(chan os.Signal)
+	signal.Notify(chSig, syscall.SIGINT, syscall.SIGKILL)
+	_ = <-chSig
 }
 
 // Start starts service
