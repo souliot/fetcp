@@ -2,6 +2,7 @@ package fetcp
 
 import (
 	"errors"
+	"io"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -174,6 +175,9 @@ func (c *Conn) readLoop() {
 
 		p, err := c.srv.protocol.ReadPacket(c)
 		if err != nil {
+			if err == io.EOF {
+				return
+			}
 			continue
 		}
 		c.UpdateLastTimeOfHeatBeat()
