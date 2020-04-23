@@ -1,18 +1,16 @@
 package fetcp
 
 type SrvConfig struct {
-	ServerName             string `json:"serverName"`
-	Port                   int    `json:"port"`
-	PacketSendChanLimit    int    `json:"packetSendChanLimit"`
-	PacketReceiveChanLimit int    `json:"packetReceiveChanLimit"`
-	ConnectTimeOut         int64  `json:"connectTimeOut"`
-	HeatbeatCheck          bool   `json:"heatbeatCheck"`
-	HeatbeatCheckSpec      int    `json:"heatbeatCheckSpec"`
+	Port                   int   `json:"port"`
+	PacketSendChanLimit    int   `json:"packetSendChanLimit"`
+	PacketReceiveChanLimit int   `json:"packetReceiveChanLimit"`
+	ConnectTimeOut         int64 `json:"connectTimeOut"`
+	HeatbeatCheck          bool  `json:"heatbeatCheck"`
+	HeatbeatCheckSpec      int   `json:"heatbeatCheckSpec"`
 }
 
 var (
 	DefaultServerConfig = &SrvConfig{
-		ServerName:             "fetcp",
 		Port:                   9000,
 		PacketSendChanLimit:    4096,
 		PacketReceiveChanLimit: 4096,
@@ -28,9 +26,6 @@ func (s *SrvConfig) MergeConfig(cs ...*SrvConfig) {
 	}
 
 	sc := cs[0]
-	if sc.ServerName != "" {
-		s.ServerName = sc.ServerName
-	}
 	if sc.Port != 0 {
 		s.Port = sc.Port
 	}
