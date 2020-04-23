@@ -1,13 +1,13 @@
 package fetcp
 
 type SrvConfig struct {
-	ServerName             string
-	Port                   int
-	PacketSendChanLimit    int
-	PacketReceiveChanLimit int
-	ConnectTimeOut         int64
-	HeatbeatCheck          bool
-	HeatbeatCheckSpec      int
+	ServerName             string `json:"serverName"`
+	Port                   int    `json:"port"`
+	PacketSendChanLimit    int    `json:"packetSendChanLimit"`
+	PacketReceiveChanLimit int    `json:"packetReceiveChanLimit"`
+	ConnectTimeOut         int64  `json:"connectTimeOut"`
+	HeatbeatCheck          bool   `json:"heatbeatCheck"`
+	HeatbeatCheckSpec      int    `json:"heatbeatCheckSpec"`
 }
 
 var (
