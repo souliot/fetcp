@@ -19,7 +19,7 @@ var (
 		PacketSendChanLimit:    4096,
 		PacketReceiveChanLimit: 4096,
 		ConnectTimeOut:         300,
-		HeatbeatCheck:          false,
+		HeatbeatCheck:          true,
 		HeatbeatCheckSpec:      5,
 	}
 )
