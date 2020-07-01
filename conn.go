@@ -100,6 +100,7 @@ func (c *Conn) Close() {
 		close(c.packetSendChan)
 		close(c.packetReceiveChan)
 		c.conn.Close()
+		c.srv.DelConn(c)
 		c.srv.callback.OnClose(c)
 	})
 }
@@ -149,7 +150,7 @@ func (c *Conn) Do() {
 	if !c.srv.callback.OnConnect(c) {
 		return
 	}
-
+	c.srv.AddConn(c)
 	asyncDo(c.StartHeartBeatTimeOutCheck, c.srv.waitGroup)
 	asyncDo(c.handleLoop, c.srv.waitGroup)
 	asyncDo(c.readLoop, c.srv.waitGroup)
