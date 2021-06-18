@@ -9,8 +9,8 @@ type srvOption struct {
 	PacketSendChanLimit    int   `json:"packetSendChanLimit"`
 	PacketReceiveChanLimit int   `json:"packetReceiveChanLimit"`
 	ConnectTimeOut         int64 `json:"connectTimeOut"`
-	HeatbeatCheck          bool  `json:"heatbeatCheck"`
-	HeatbeatCheckSpec      int   `json:"heatbeatCheckSpec"`
+	HeartBeatCheck          bool  `json:"HeartBeatCheck"`
+	HeartBeatCheckSpec      int   `json:"HeartBeatCheckSpec"`
 }
 
 var (
@@ -19,8 +19,8 @@ var (
 		PacketSendChanLimit:    4096,
 		PacketReceiveChanLimit: 4096,
 		ConnectTimeOut:         300,
-		HeatbeatCheck:          true,
-		HeatbeatCheckSpec:      5,
+		HeartBeatCheck:          true,
+		HeartBeatCheckSpec:      5,
 	}
 )
 
@@ -62,14 +62,14 @@ func WithConnectTimeOut(d int64) SrvOption {
 	})
 }
 
-func WithHeatbeatCheck(d bool) SrvOption {
+func WithHeartBeatCheck(d bool) SrvOption {
 	return newFuncSrvOption(func(o *srvOption) {
-		o.HeatbeatCheck = d
+		o.HeartBeatCheck = d
 	})
 }
 
-func WithHeatbeatCheckSpec(d int) SrvOption {
+func WithHeartBeatCheckSpec(d int) SrvOption {
 	return newFuncSrvOption(func(o *srvOption) {
-		o.HeatbeatCheckSpec = d
+		o.HeartBeatCheckSpec = d
 	})
 }
